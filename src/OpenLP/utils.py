@@ -131,12 +131,14 @@ def calculate_ncc_metrics(evalpred: EvalPrediction):
     recall_macro = recall_score(labels, preds, average='macro')
     precision_macro = precision_score(labels, preds, average='macro')
     F1_macro = f1_score(labels, preds, average='macro')
+    F1_micro = f1_score(labels, preds, average='micro')
     accuracy = accuracy_score(labels, preds)
-
+    
     return {
         "recall_macro": recall_macro,
         "precision_macro": precision_macro,
         "F1_macro": F1_macro,
+        "F1_micro": F1_micro,
         "accuracy": accuracy,
     }
 

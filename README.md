@@ -30,7 +30,12 @@ pip3 install -r requirements.txt
 ## Datasets
 **Download processed data.** To reproduce the results in our paper, you need to first download the processed [datasets](https://drive.google.com/drive/folders/1k0ISi6-vBwUQOioNMkHYe8cu-pzlg-3T?usp=sharing). The extract the data files by
 ```
+gdown https://drive.google.com/uc?id=1TM6fiZKsgF1WPW_2mwibegD4c8jv3coo
 tar -xf data.tar.gz
+```
+GLBench dataset [folder](https://drive.google.com/drive/folders/1WfBIPA3dMd8qQZ6QlQRg9MIFGMwnPdFj)
+```
+gdown --folder --output ./data https://drive.google.com/drive/folders/1WfBIPA3dMd8qQZ6QlQRg9MIFGMwnPdFj
 ```
 
 Create a new ```ckpt/``` folder for checkpoint saving and a new ```logs/``` folder for logs saving.
@@ -69,6 +74,7 @@ Change ```$PROJ_DIR``` to your project directory. We support both single GPU tra
 
 You can directly download our pretrained checkpoints [here](https://drive.google.com/file/d/1WEgYfgUKfchYrrfqGKmuKfNorBH9pU4H/view?usp=drive_link). Then extract the checkpoint files by
 ```
+gdown https://drive.google.com/uc?id=1WEgYfgUKfchYrrfqGKmuKfNorBH9pU4H
 tar -xf pretrained_ckpt.tar.gz
 ```
 

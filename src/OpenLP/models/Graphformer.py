@@ -514,3 +514,61 @@ class GraphFormersForLinkPredict(BertPreTrainedModel):
         return BaseModelOutputWithPoolingAndCrossAttentions(
             last_hidden_state=node_embeddings[:,0]
         )
+    
+
+class GraphFormersForContextual(BertPreTrainedModel):
+    def __init__(self, config):
+        super().__init__(config)
+        self.bert = GraphFormers(config)
+        self.init_weights()
+
+    def forward(self, center_input, neighbor_input=None, mask=None, **kwargs):
+        '''
+        B: batch size, N: 1 + neighbour_num, L: max_token_len, D: hidden dimension
+        '''
+
+        B, L = center_input['input_ids'].shape
+        device = center_input['input_ids'].device
+
+        # Handle retrieval inference
+        if not neighbor_input:
+            neighbor_input = center_input.copy()
+            mask = torch.zeros(B, 1, dtype=torch.long).to(device)
+
+        # Combine center and neighbor inputs
+        combined_input_ids = torch.cat((center_input['input_ids'].unsqueeze(1), neighbor_input['input_ids'].view(B, -1, L)), dim=1)
+        combined_attention_mask = torch.cat((center_input['attention_mask'].unsqueeze(1), neighbor_input['attention_mask'].view(B, -1, L)), dim=1)
+
+        N = combined_input_ids.shape[1]  # 1 + neighbor_num
+
+        # Expand center input to match all (including itself)
+        expanded_center_input_ids = center_input['input_ids'].unsqueeze(1).expand(-1, N, -1)
+        expanded_center_attention_mask = center_input['attention_mask'].unsqueeze(1).expand(-1, N, -1)
+
+        # Concatenate each node's input with the center input along the sequence length (dim=-1)
+        contextual_input_ids = torch.cat((combined_input_ids, expanded_center_input_ids), dim=-1)  # [B, N, 2L]
+        contextual_attention_mask = torch.cat((combined_attention_mask, expanded_center_attention_mask), dim=-1)  # [B, N, 2L]
+
+        # Handle mask
+        if mask is None:
+            mask = torch.zeros(B, N - 1, dtype=torch.long).to(device)
+        combined_mask = torch.cat((torch.ones((B, 1), dtype=torch.long).to(device), mask), dim=1)
+
+        # Expand center node labels to match 2L sequence length
+        if 'labels' in center_input:
+            expanded_labels = torch.cat((center_input['labels'], center_input['labels']), dim=-1)  # [B, 2L]
+
+        # Reshape for BERT input without changing batch size (B)
+        input_ids = contextual_input_ids.view(B * N, -1)  # Still flattened for BERT input
+        attention_mask = contextual_attention_mask.view(B * N, -1)
+
+        hidden_states = self.bert(input_ids, attention_mask, combined_mask)
+
+        last_hidden_states = hidden_states[0]
+
+        D = self.config.hidden_size
+        node_embeddings = last_hidden_states[:, 1:].view(B, N, -1, D)  # [B, N, 2L, D]
+
+        return BaseModelOutputWithPoolingAndCrossAttentions(
+            last_hidden_state=node_embeddings[:, 0, :L]  # Return center node embedding with L length
+        )

@@ -1,6 +1,8 @@
 PROJ_DIR=..
 
-DOMAIN=sports
+DOMAIN=cora
+CLASS_NUMBER=7
+MAX_LENGTH=32
 PROCESSED_DIR=$PROJ_DIR/data/$DOMAIN/nc-coarse/8_8
 LOG_DIR=$PROJ_DIR/logs/$DOMAIN/nc_class
 CHECKPOINT_DIR=$PROJ_DIR/ckpt/$DOMAIN/nc_class
@@ -9,7 +11,7 @@ LR="1e-5"
 # MODEL_TYPE=graphformer
 MODEL_TYPE=contextualgraphformer
 
-MODEL_DIR=$PROJ_DIR/ckpt/$DOMAIN/patton/$MODEL_TYPE/$LR/checkpoint-270430
+MODEL_DIR=$PROJ_DIR/ckpt/$DOMAIN/patton/$MODEL_TYPE/$LR/checkpoint-11700
 # MODEL_DIR=$PROJ_DIR/pretrained_ckpt/$DOMAIN/scipatton
 
 echo "start training..."
@@ -27,12 +29,12 @@ python -m OpenLP.driver.train_class  \
     --logging_steps 50 \
     --train_path $PROCESSED_DIR/train.text.jsonl  \
     --eval_path $PROCESSED_DIR/val.text.jsonl  \
-    --class_num 16 \
+    --class_num $CLASS_NUMBER \
     --fp16  \
     --per_device_train_batch_size 256  \
     --per_device_eval_batch_size 256 \
     --learning_rate $LR  \
-    --max_len 32  \
+    --max_len $MAX_LENGTH  \
     --num_train_epochs 500  \
     --logging_dir $LOG_DIR/$MODEL_TYPE/$LR  \
     --evaluation_strategy steps \

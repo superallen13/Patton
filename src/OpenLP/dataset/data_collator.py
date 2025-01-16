@@ -256,9 +256,23 @@ class TrainLMCollator(DataCollatorForLanguageModeling):
         kn_collated["input_ids"], kn_collated["labels"] = self.torch_mask_tokens(
                 kn_collated["input_ids"], special_tokens_mask=None
             )
+        
+        return {
+            'query': {
+                'center_input': q_collated,
+                'neighbor_input': qn_collated,
+                'mask': q_mask
+            },
+            'keys': {
+                'center_input': k_collated,
+                'neighbor_input': kn_collated,
+                'mask': k_mask
+            },
+            'labels': torch.arange(len(qq), dtype=torch.long)
+        }
 
-        return {'center_input': q_collated, 'neighbor_input': qn_collated, 'mask': q_mask}, \
-                 {'center_input': k_collated, 'neighbor_input': kn_collated, 'mask': k_mask}
+        # return {'center_input': q_collated, 'neighbor_input': qn_collated, 'mask': q_mask}, \
+        #          {'center_input': k_collated, 'neighbor_input': kn_collated, 'mask': k_mask}
 
 
 @dataclass
@@ -370,7 +384,15 @@ class TrainNCCCollator(DataCollatorWithPadding):
         q_mask = torch.LongTensor(q_mask)
         labels = torch.LongTensor(labels)
 
-        return {'center_input': q_collated, 'neighbor_input': qn_collated, 'mask': q_mask}, labels
+        # return {'center_input': q_collated, 'neighbor_input': qn_collated, 'mask': q_mask}, labels
+        return {
+            'query': {
+                'center_input': q_collated,
+                'neighbor_input': qn_collated,
+                'mask': q_mask
+            },
+            'labels': labels
+        }
 
 
 @dataclass

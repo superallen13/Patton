@@ -1,11 +1,13 @@
 PROJ_DIR=..
 
-SOURCE_DOMAIN=sports
+SOURCE_DOMAIN=cora
+CLASS_NUMBER=7
+MAX_LENGTH=32
 
 # MODEL_TYPE=graphformer
 MODEL_TYPE=contextualgraphformer
 
-STEP=300
+STEP=350
 
 CHECKPOINT_DIR=$PROJ_DIR/ckpt/$SOURCE_DOMAIN/nc_class/$MODEL_TYPE/1e-5/checkpoint-$STEP
 
@@ -22,10 +24,10 @@ python -m OpenLP.driver.test_class  \
     --do_eval  \
     --train_path $TEST_DIR/test.text.jsonl  \
     --eval_path $TEST_DIR/test.text.jsonl  \
-    --class_num 16 \
+    --class_num $CLASS_NUMBER \
     --fp16  \
     --per_device_eval_batch_size 256 \
-    --max_len 32  \
+    --max_len $MAX_LENGTH  \
     --evaluation_strategy steps \
     --remove_unused_columns False \
     --overwrite_output_dir True \

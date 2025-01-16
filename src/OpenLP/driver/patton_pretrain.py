@@ -12,7 +12,6 @@ from OpenLP.trainer import DenseTrainer as Trainer
 from OpenLP.trainer import GCDenseTrainer
 from OpenLP.utils import calculate_metrics
 from transformers import AutoConfig, AutoTokenizer, HfArgumentParser, set_seed
-from transformers.integrations import TensorBoardCallback
 
 
 logger = logging.getLogger(__name__)
@@ -86,8 +85,6 @@ def main():
     train_dataset = TrainDataset(tokenizer, data_args, shuffle_seed=training_args.seed, cache_dir=data_args.data_cache_dir or model_args.cache_dir)
     eval_dataset = EvalDataset(tokenizer, data_args, shuffle_seed=training_args.seed, cache_dir=data_args.data_cache_dir or model_args.cache_dir) if data_args.eval_path is not None else None
 
-    tb_callback = TensorBoardCallback()
-
     trainer_cls = GCDenseTrainer if training_args.grad_cache else Trainer
     trainer = trainer_cls(
         model=model,
@@ -98,7 +95,6 @@ def main():
             tokenizer,
             max_len=data_args.max_len,
         ),
-        callbacks=[tb_callback],
         compute_metrics=calculate_metrics,
     )
     train_dataset.trainer = trainer

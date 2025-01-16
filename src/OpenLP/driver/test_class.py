@@ -82,6 +82,7 @@ def main():
     test_dataset[0]
 
     trainer_cls = GCDenseTrainer if training_args.grad_cache else Trainer
+    training_args.eval_strategy = 'no'
     trainer = trainer_cls(
         model=model,
         args=training_args,

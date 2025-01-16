@@ -110,3 +110,7 @@ venv.bak/
 model/
 model_*/
 .DS_Store
+ckpt
+data
+logs
+wandb

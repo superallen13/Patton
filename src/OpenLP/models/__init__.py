@@ -1,5 +1,6 @@
-from .Graphformer import GraphFormersForLinkPredict
+from .Graphformer import GraphFormersForLinkPredict, GraphFormersForContextual
 
 AutoModels = {
-    'graphformer': GraphFormersForLinkPredict
+    'graphformer': GraphFormersForLinkPredict,
+    'contextualgraphformer': GraphFormersForContextual
 }

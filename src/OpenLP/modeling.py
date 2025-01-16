@@ -185,7 +185,7 @@ class DenseModel(nn.Module):
             p_reps=p_reps.contiguous()
         )
 
-    def encode(self, psg):
+    def encode(self, psg: Dict[str, Tensor]):
         if psg is None:
             return None, None
         # psg = BatchEncoding(psg)
@@ -406,6 +406,7 @@ class DenseLMModel(DenseModel):
             self,
             query: Dict[str, Tensor] = None,
             keys: Dict[str, Tensor] = None,
+            labels: Tensor = None,
     ):
 
         q_hidden, q_reps = self.encode(query)
@@ -429,11 +430,7 @@ class DenseLMModel(DenseModel):
         # print(scores.shape)
         # scores = scores.view(effective_bsz, -1)  # ???
 
-        target = torch.arange(
-            scores.size(0),
-            device=scores.device,
-            dtype=torch.long
-        )
+        target = labels
 
         if scores.shape[0] != scores.shape[1]:
             # otherwise in batch neg only
@@ -477,10 +474,11 @@ class DenseLMModel(DenseModel):
             train_args: TrainingArguments,
             **hf_kwargs,
     ):
-        # load model
+        # load model (e.g., GraphFormersForLinkPredict)
         lm_config = AutoConfig.from_pretrained(model_args.model_name_or_path, **hf_kwargs)
         lm = AutoModels[model_args.model_type].from_pretrained(model_args.model_name_or_path, **hf_kwargs)
 
+        # NOTE: MLM head for predicting masked tokens by mapping hidden states to vocabulary logits
         mlm_head = AutoModelForMaskedLM.from_pretrained(model_args.model_name_or_path, **hf_kwargs).cls
         # mlm_head = BertOnlyMLMHead(lm_config)
         # mlm_head.load_state_dict(torch.load(f'{model_args.model_name_or_path}/mlm_head.pt'))
@@ -533,11 +531,10 @@ class DenseModelforNCC(nn.Module):
     def forward(
             self,
             query: Dict[str, Tensor] = None,
-            keys: Tensor = None,
+            labels: Tensor = None,
     ):
 
         q_hidden, q_reps = self.encode(query)
-        labels = keys
 
         if q_reps is None:
             return DenseOutput(

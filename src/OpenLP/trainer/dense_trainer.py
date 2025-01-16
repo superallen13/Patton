@@ -43,17 +43,17 @@ class DenseTrainer(Trainer):
         logger.info("Saving model checkpoint to %s", output_dir)
         self.model.save(output_dir)
 
-    def _prepare_inputs(
-            self,
-            inputs: Tuple[Dict[str, Union[torch.Tensor, Any]], ...]
-    ) -> List[Dict[str, Union[torch.Tensor, Any]]]:
-        prepared = []
-        for x in inputs:
-            if isinstance(x, torch.Tensor):
-                prepared.append(x.to(self.args.device))
-            else:
-                prepared.append(super()._prepare_inputs(x))
-        return prepared
+    # def _prepare_inputs(
+    #         self,
+    #         inputs: Tuple[Dict[str, Union[torch.Tensor, Any]], ...]
+    # ) -> List[Dict[str, Union[torch.Tensor, Any]]]:
+    #     prepared = []
+    #     for x in inputs:
+    #         if isinstance(x, torch.Tensor):
+    #             prepared.append(x.to(self.args.device))
+    #         else:
+    #             prepared.append(super()._prepare_inputs(x))
+    #     return prepared
 
     def get_train_dataloader(self) -> DataLoader:
         """
@@ -102,9 +102,8 @@ class DenseTrainer(Trainer):
             pin_memory=self.args.dataloader_pin_memory,
         )
 
-    def compute_loss(self, model, inputs, return_outputs=False):
-        query, keys = inputs
-        outputs = model(query=query, keys=keys)
+    def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch = None):
+        outputs = model(**inputs)
 
         return (outputs.loss, outputs) if return_outputs else outputs.loss
 
@@ -168,5 +167,8 @@ class GCDenseTrainer(DenseTrainer):
         _distributed = self.args.local_rank > -1
         self.gc.models = [model, model]
         loss = self.gc(query, keys, no_sync_except_last=_distributed)
+
+        # add loss to the logger
+        self.log("train_loss", loss, prog_bar=True, logger=True)
 
         return loss / self._dist_loss_scale_factor

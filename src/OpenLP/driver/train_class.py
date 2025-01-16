@@ -88,7 +88,7 @@ def main():
     )
 
     class_name_path = os.path.join(
-        "/", *data_args.train_path.split("/")[:-1], LABEL_FILE_NAME
+        *data_args.train_path.split("/")[:-1], LABEL_FILE_NAME
     )
     logger.info("Read class name for task from %s" % (class_name_path))
     label_names = []
@@ -125,8 +125,6 @@ def main():
         else None
     )
 
-    tb_callback = TensorBoardCallback()
-
     trainer_cls = GCDenseTrainer if training_args.grad_cache else Trainer
     trainer = trainer_cls(
         model=model,
@@ -137,7 +135,6 @@ def main():
             tokenizer,
             max_len=data_args.max_len,
         ),
-        callbacks=[tb_callback],
         compute_metrics=calculate_ncc_metrics,
     )
     train_dataset.trainer = trainer
